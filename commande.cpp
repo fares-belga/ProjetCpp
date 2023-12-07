@@ -57,14 +57,22 @@ void Commande::SetQUANTITECOMMANDE(int QUANTITECO) {
 
 bool Commande::ajouter()
 {
+    // Assurez-vous que la connexion à la base de données est établie
+    if (!setupDatabaseConnection()) {
+        qDebug() << "Error: Failed to set up the database connection.";
+        return false;
+    }
+
     QSqlQuery query;
     QString ID_string = QString::number(ID);
-    QString QUANTITECOMMANDE_string=QString::number(QUANTITECOMMANDE);
+    QString QUANTITECOMMANDE_string = QString::number(QUANTITECOMMANDE);
 
+    qDebug() << "Before preparing query";
     query.prepare("INSERT INTO COMMANDE (ID, STATUS_PRODUIT, DATE_PRODUIT,QUANTITECOMMANDE) "
-                  "VALUES (:ID,  :STATUS_PRODUIT, :DATE_PRODUIT,:QUANTITECOMMANDE)");
-    query.bindValue(":ID", ID_string);
+                  "VALUES (:ID,  :STATUS_PRODUIT, :DATE_PRODUIT, :QUANTITECOMMANDE)");
+    qDebug() << "After preparing query";
 
+    query.bindValue(":ID", ID_string);
     query.bindValue(":STATUS_PRODUIT", STATUS_PRODUIT);
     query.bindValue(":DATE_PRODUIT", DATE_PRODUIT);
     query.bindValue(":QUANTITECOMMANDE", QUANTITECOMMANDE_string);
@@ -74,7 +82,7 @@ bool Commande::ajouter()
     if (inserted) {
         qDebug() << "Record inserted successfully!";
     } else {
-        qDebug() << "Error:" << query.lastError().text();
+       qDebug() << "Error:" << query.lastError().text();
     }
 
     return inserted;
@@ -92,10 +100,10 @@ bool Commande::modifier(int ID)
     query.bindValue(":DATE_PRODUIT", DATE_PRODUIT);
     query.bindValue(":QUANTITECOMMANDE",QUANTITECOMMANDE);
     if (query.exec()) {
-        qDebug() << "Modification réussie";
+      //  qDebug() << "Modification réussie";
         return true;
     } else {
-        qDebug() << "Erreur lors de la modification : " << query.lastError().text();
+     //   qDebug() << "Erreur lors de la modification : " << query.lastError().text();
         return false;
     }
 }
@@ -108,7 +116,7 @@ bool Commande::setupDatabaseConnection()
     db.setDatabaseName("your_database_file_path");
 
     if (!db.open()) {
-        qDebug() << "Error: Failed to open the database." << db.lastError();
+        //qDebug() << "Error: Failed to open the database." << db.lastError();
         return false;
     }
 
@@ -149,7 +157,7 @@ QSqlQuery query;
         if (query.exec()) {
             return true; // Deletion was successful
         } else {
-            qDebug() << "Error during deletion:" << query.lastError().text();
+         //   qDebug() << "Error during deletion:" << query.lastError().text();
             return false;
         }
     } else {

@@ -1,7 +1,7 @@
 #ifndef COMMANDE_H
 #define COMMANDE_H
 
-#include "connexion.h"
+#include "connection.h"
 #include<QString>
 #include<iostream>
 #include<QSqlQueryModel>

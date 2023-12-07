@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "commande.h"
+#include "produits.h"
+#include <QMessageBox>
 #include <QIntValidator>
 #include <QObject>
 #include <QtDebug>
@@ -8,7 +9,7 @@
 #include<QSqlQuery>
 #include <QDate>
 #include <QDateEdit>
-
+#include"notif.h"
 #include <QSqlError>
 #include <QPdfWriter>
 #include <QTextDocument>
@@ -17,7 +18,7 @@
 #include <QFile>
 #include <QSqlQuery>
 #include <QSqlError>
-
+#include "smtp.h"
 
 #include <QPainter>
 #include <QDebug>
@@ -52,150 +53,124 @@
 #include <QFile>
 #include <QDataStream>
 
+#include "smtp.h"
 
 #include <QPdfWriter>
 #include <QPainter>
 
+#include <QtCharts>
+#include <QChartView>
+#include <QBarSet>
 
-
-// Assurez-vous que le fichier d'en-tête de votre classe Commande est inclus
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent):
+    QMainWindow(parent),
+     ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
-    ui ->LE_ID->setValidator(new QIntValidator(0,9999999,this));
-    ui->LE_QUANTITECOMMANDE->setValidator( new QIntValidator(0, 999999, this));
+    ui ->le_reference_produit->setValidator(new QIntValidator(0,9999999,this));
+    ui->le_reference_produit->setValidator( new QIntValidator(0, 999999, this));
     QRegExp rx("[a-zA-Z]+");
 
 
-    ui->TAB_CMD->setModel(c.afficher());
-    ui->historiqueTV->setModel(h.afficherHistorique());
+    ui->tab_produits->setModel(p.afficher());
+
+
+
+    int ret=A.connect_arduino(); // lancer la connexion à arduino
+    switch(ret){
+    case(0):qDebug()<< "arduino is available and connected to : "<< A.getarduino_port_name();
+     break;
+    case(1):qDebug() << "arduino is available but not connected to :" <<A.getarduino_port_name();
+       break;
+   case(-1):qDebug() << "arduino is not available";
 }
+
+
+
+
+}
+
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-#include <QMessageBox>
-void setWidgetBackground(QWidget *widget, const QColor &color = Qt::magenta, bool visible = true) {
-    QPalette palette = widget->palette();
-    palette.setColor(QPalette::Background, color);
-    widget->setAutoFillBackground(true);
-    widget->setPalette(palette);
-    widget->setVisible(visible);
-}
-void MainWindow::on_BTNAJOUTER_clicked()
-{     c.afficher();
-    qDebug() << "Setting background color to magenta.";
-    ui->LE_A->repaint();
-    ui->LE_B->repaint();
-
-    ui->LE_A->setAutoFillBackground(true);
-    ui->LE_B->setAutoFillBackground(true);
-
-    qDebug() << "Setting background color to magenta.";
-    ui->LE_A->repaint();
-    ui->LE_A->setAutoFillBackground(true);
-    ui->LE_B->repaint();
-    ui->LE_B->setAutoFillBackground(true);
-
-    int ID = ui->LE_ID->text().toInt();
-    QString STATUS_PRODUIT = ui->LE_S->currentText();  // Changer de ACTION à STATUS_PRODUIT
-    QString DATE_PRODUIT = ui->LE_DATE->text();
-    int QUANTITECOMMANDE = ui->LE_QUANTITECOMMANDE->text().toInt();
-
-    // Utilisez qDebug() pour imprimer la valeur du statut du produit dans la console de débogage
-    qDebug() << "Status of the product: " << STATUS_PRODUIT;
-
-    Commande c(ID, STATUS_PRODUIT, DATE_PRODUIT, QUANTITECOMMANDE);  // Changer de ACTION à STATUS_PRODUIT
-
-    // Ajouter les données à la base de données
-    bool insertionSuccess = c.ajouter();
-
-    // Mettre à jour le modèle de la table avec les données nouvellement ajoutées
-    ui->TAB_CMD->setModel(c.afficher());
-    //historique ajout
-    historique hist("Ajout",QString::number(ID));
-    hist.saveHistorique();
-    ui->historiqueTV->setModel(h.afficherHistorique());
-
-
-    QPalette paletteA = ui->LE_A->palette();
-    QPalette paletteB = ui->LE_B->palette();
-
-    paletteA.setColor(QPalette::Background, Qt::magenta);
-    paletteB.setColor(QPalette::Background, Qt::magenta);
-
-    ui->LE_A->setAutoFillBackground(true);
-    ui->LE_B->setAutoFillBackground(true);
-
-    // Rétablir la couleur par défaut si nécessaire
-    ui->LE_A->setStyleSheet("");
-    ui->LE_B->setStyleSheet("");
-
-    if (STATUS_PRODUIT.toLower() == "bon etat") {
-        ui->LE_A->setStyleSheet("background-color: green;");
-    } else if (STATUS_PRODUIT.toLower() == "mauvais etat") {
-        ui->LE_B->setStyleSheet("background-color: red;");
-    }
-
-    QMessageBox messageBox;
-
-    if (insertionSuccess) {
-        messageBox.setText("Data added to the database successfully!");
-    } else {
-        messageBox.setText("Failed to add data to the database!");
-    }
-
-    messageBox.exec();
-}
-
-
-
-void MainWindow::on_BTNMODIFIER_clicked()
+void MainWindow::on_pb_Ajouter_clicked()
 {
-    // ... Votre code actuel ...
 
-    int ID = ui->LE_ID->text().toInt();
-    QString STATUS_PRODUIT = ui->LE_S->currentText();
-    QString DATE_PRODUIT = ui->LE_DATE->text();
-    int QUANTITECOMMANDE = ui->LE_QUANTITECOMMANDE->text().toInt();
 
-    Commande c(ID, STATUS_PRODUIT, DATE_PRODUIT, QUANTITECOMMANDE);
+    data=A.read_from_arduino(); //input
+    test= data;
+    qDebug()<<test.left(test.length()-4);
+    QString code=test.left(test.length()-4);
+    if(code!=""){
 
-    // Modifier les données dans la base de données
-    bool test = c.modifier(ID);
-    ui->TAB_CMD->setModel(c.afficher());
+    int reference = ui->le_reference_produit->text().toInt();
+    float prix = ui->le_prix->text().toFloat();
+    QString date_produit = ui->le_date_produit->text();
+    int quantite = ui->le_quantite->text().toInt();
+    QString NOM = ui->le_nom->text();
+    QString EMAIL = ui->le_email->text();
 
-    // Afficher une boîte de message en fonction du résultat de la modification
-    QMessageBox messageBox;
+    ui->tab_produits->setModel(p.afficher());
+    produits p(reference, prix, date_produit, quantite, NOM, EMAIL);
+    bool insertionSuccess =p.ajouter();
 
-    if (test) {
-        messageBox.setText("Update successful.");
-        //historique ajout
-        historique hist("Update",QString::number(ID));
-        hist.saveHistorique();
-        ui->historiqueTV->setModel(h.afficherHistorique());
-        messageBox.setIcon(QMessageBox::Information);
-    } else {
-        messageBox.setText("Update failed.");
-        messageBox.setIcon(QMessageBox::Critical);
-    }
-
-    messageBox.exec();
-
-    // ... Votre code actuel ...
-}
-
-void MainWindow::on_BTNSUPPRIMER_clicked()
-{
+    QMessageBox messagebox;
+    if (insertionSuccess)
     {
+        messagebox.setText("Data added to the database successfully");
+        n.AjouterP();
+        p.arduino(code , "Ajout");
+        A.write_to_arduino("Ajout"); //output
+    }
+    else
+    {
+        messagebox.setText("Failed to add data to the database");
+        A.write_to_arduino("Failed");
+    }
+    messagebox.exec();
+
+    if (insertionSuccess)
+    {
+        QMessageBox::information(nullptr, QObject::tr("Mise à jour"),
+                                 QObject::tr("Mise à jour réussie.\n"
+                                             "Cliquez sur Annuler pour quitter."),
+                                 QMessageBox::Cancel);
+        n.ModifierP();
+    }
+    else
+    {
+        QMessageBox::critical(nullptr, QObject::tr("Mise à jour"),
+                               QObject::tr("Échec de la mise à jour.\n"
+                                           "Cliquez sur Annuler pour quitter."),
+                               QMessageBox::Cancel);
+    }}
+    else
+        QMessageBox::critical(nullptr, QObject::tr("scan RFID"),QObject::tr("scan  fAILED"), QMessageBox::Cancel);
+
+    // Mettez à jour le modèle après la modification
+    ui->tab_produits->setModel(p.afficher());
+}
+
+
+
+
+
+void MainWindow::on_pb_supprimer_3_clicked()
+{
+
+
+
+        data=A.read_from_arduino();
+        test= data;
+        qDebug()<<test.left(test.length()-4);
+        QString code=test.left(test.length()-4);
+        if(code!=""){
         // Récupère la ligne sélectionnée dans le tableau
-            int row = ui->TAB_CMD->currentIndex().row();
+            int row = ui->tab_produits->currentIndex().row();
 
             // Vérifie si une ligne est sélectionnée
             if (row < 0) {
@@ -204,7 +179,7 @@ void MainWindow::on_BTNSUPPRIMER_clicked()
             }
 
             // Récupère l'ID de l'enregistrement sélectionné dans le tableau
-            int ID = ui->TAB_CMD->model()->data(ui->TAB_CMD->model()->index(row, 0)).toInt();
+            int reference = ui->tab_produits->model()->data(ui->tab_produits->model()->index(row, 0)).toInt();
 
 
             // Affiche un message de confirmation demandant à l'utilisateur s'il est sûr de vouloir supprimer les informations de l'enregistrement sélectionné
@@ -216,104 +191,322 @@ void MainWindow::on_BTNSUPPRIMER_clicked()
 
             // Si l'utilisateur confirme la suppression, crée un objet Donataire et appelle la fonction "supprimer" pour supprimer l'enregistrement correspondant
             if (res == QMessageBox::Yes) {
-               Commande c;
-                c.SetID(ID);
-                bool test = c.supprimer(c.GetID());
+                produits p;
+                p.Setreference_produit(reference);
+                bool test = p.supprimer(p.Getreference_produit());
 
                 // Affiche un message de succès ou d'échec
                 if(test) {
                     QMessageBox::information(this, "Succès", "Suppression avec succès");
-                    //historique ajout
-                    historique hist("Delete",QString::number(ID));
-                    hist.saveHistorique();
-                    ui->historiqueTV->setModel(h.afficherHistorique());
-                    ui->TAB_CMD->setModel(c.afficher());
-
+                    ui->tab_produits->setModel(p.afficher());
+                    n.SupprimerP();
+                    p.arduino(code , "Delete");
+                    A.write_to_arduino("Delete"); //output
 
                 } else {
                     QMessageBox::warning(this, "Échec", "Échec de suppression");
+                    A.write_to_arduino("Failed");
                 }
             }
+    }else
+                    QMessageBox::critical(nullptr, QObject::tr("scan RFID"),QObject::tr("scan  fAILED"), QMessageBox::Cancel);
+
+}
+
+
+
+
+void MainWindow::on_modifier_clicked()
+{
+
+
+
+    data=A.read_from_arduino();
+    test= data;
+    qDebug()<<test.left(test.length()-4);
+    QString code=test.left(test.length()-4);
+    if(code!="") {
+
+    int reference =ui->le_reference_produit->text().toInt();
+    float prix=ui->le_prix->text().toFloat();
+    QString date_produit = ui->le_date_produit->text();
+    int quantite=ui->le_quantite->text().toInt();
+    QString nom=ui->le_nom->text();
+     QString EMAIL=ui->le_email->text();
+
+
+        produits p(reference,prix,date_produit,quantite,nom,EMAIL);
+         bool test=p.modifier(reference);
+           ui->tab_produits->setModel(p.afficher());
+          if(test){
+              QMessageBox::information(nullptr, QObject::tr("update"),
+                    QObject::tr(" successful.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+              n.ModifierP();
+              p.arduino(code , "Modifier");
+                    A.write_to_arduino("Modifier");
+
+    }
+          else
+          {
+         QMessageBox::critical(nullptr, QObject::tr("update"),
+                     QObject::tr(" failed.\n"
+                                 "Click Cancel to exit."), QMessageBox::Cancel);
+          A.write_to_arduino("Failed");
+
+         }
+    }else
+        QMessageBox::critical(nullptr, QObject::tr("scan RFID"),QObject::tr("scan  fAILED"), QMessageBox::Cancel);
+}
+
+void MainWindow::on_pb_recherche_clicked()
+{
+
+        // Récupérez le texte saisi dans le champ de recherche (le_recherche)
+        QString searchText = ui->le_recherche->text();
+        QSqlQueryModel* model = new QSqlQueryModel();
+
+        if (model == nullptr) {
+            qDebug() << "Failed to create QSqlQueryModel.";
+            return;
+        }
+
+        QSqlQuery query;
+        // Utilisez une condition pour déterminer si l'entrée est un nombre (ref) ou une chaîne (NOM)
+        if (searchText.toInt() > 0) {
+            // Si l'entrée est un nombre (ref), recherchez par ref
+
+            query.prepare("SELECT * FROM PRODUITS WHERE REFERENCE_PRODUIT = :REFERENCE_PRODUIT");
+            query.bindValue(":REFERENCE_PRODUIT", searchText.toInt());
+        } else {
+            // Sinon, recherchez par NOM
+            query.prepare("SELECT * FROM PRODUITS WHERE NOM = :NOM");
+            query.bindValue(":NOM", searchText);
+        }
+
+        if (query.exec()) {
+            model->setQuery(query);
+            model->setQuery("SELECT * FROM produits");
+            model->setHeaderData(0, Qt::Horizontal, QObject::tr("reference_produit"));
+            model->setHeaderData(1, Qt::Horizontal, QObject::tr("prix"));
+          model->setHeaderData(2, Qt::Horizontal, QObject::tr("date_produit"));
+           model->setHeaderData(3, Qt::Horizontal, QObject::tr("quantite"));
+            model->setHeaderData(4, Qt::Horizontal, QObject::tr("nom"));
+             model->setHeaderData(4, Qt::Horizontal, QObject::tr("EMAIL"));
+
+
+            ui->tab_produits->setModel(model);
+        } else {
+            qDebug() << "Error in SQL query: " << query.lastError().text();
+            return;
+        }
+
+    }
+
+
+
+void MainWindow::on_le_recherche_textChanged(const QString &arg1)
+{
+    if(arg1!="")
+           ui->tab_produits->setModel(p.rechercherProduit(arg1));
+           else
+               ui->tab_produits->setModel(p.rechercherProduit(arg1));
+}
+
+void MainWindow::on_le_pdf_clicked()
+{
+    QPdfWriter pdf("C:/Users/hammemi/Desktop/testt/testcrud/produits.pdf");
+
+                  QPainter painter(&pdf);
+                  int i = 4000;
+                         painter.setPen(Qt::darkCyan);
+                         painter.setFont(QFont("Time New Roman", 25));
+                         painter.drawText(3000,1400,"PRODUITS");
+                         painter.setPen(Qt::black);
+                         painter.setFont(QFont("Time New Roman", 15));
+                         painter.drawRect(100,100,9400,2500);
+                         painter.drawRect(100,3000,9400,500);
+                         painter.setFont(QFont("Time New Roman", 9));
+                         painter.drawText(4400,3300,"reference_produit");
+                         painter.drawText(400,3300,"prix");
+                         painter.drawText(1750,3300,"date_produit");
+                         painter.drawText(2000,3300,"quantite");
+                         painter.drawText(2400,3300,"nom");
+                         painter.drawText(2400,3300,"EMAIL");
+
+
+
+                         painter.drawRect(100,3000,9400,9000);
+
+                         QSqlQuery query;
+                         query.prepare("select * from PRODUITS");
+                         query.exec();
+                         while (query.next())
+                         {
+
+                             painter.drawText(1350,i,query.value(1).toString());
+                             painter.drawText(2300,i,query.value(2).toString());
+                             painter.drawText(3400,i,query.value(3).toString());
+                             i = i + 350;
+                         }
+                         QMessageBox::information(this, QObject::tr("PDF Saved Successfuly!"),
+                         QObject::tr("PDF Saved Successfuly!.\n" "Click Cancel to exit."), QMessageBox::Cancel);
+}
+
+
+// ... (previous code)
+void MainWindow::on_BtnEnregistrer_clicked()
+{
+QString dir = "C:/Users/hammemi/Desktop/testt/testcrud";
+   QDir().mkpath(dir);
+   QString fileName = dir + "/PRODUIT.pdf";
+   QPdfWriter pdf(fileName);
+   QPainter painter(&pdf);
+   int i = 4000;
+painter.drawPixmap(QRect(100,100,2000,2000),QPixmap("C:/Users/msi/Downloads/logo_p.png"));//C:\Users\msi\Downloads
+    painter.setPen(Qt::red);
+    painter.setFont(QFont("Time New Roman", 25));
+    painter.drawText(3000,1450,"Liste des Pharmacies");
+    painter.setPen(Qt::black);
+    painter.setFont(QFont("Time New Roman", 15));
+    painter.drawRect(100,100,9400,2500);
+    painter.drawRect(100,3000,9400,500);
+    painter.setFont(QFont("Time New Roman", 10));
+    painter.drawText(4400, 3300, "reference_produit");
+           painter.drawText(400, 3300, "prix");
+           painter.drawText(1350, 3300, "date_produit");
+           painter.drawText(1350, 3300, "quantite");
+           painter.drawText(1350, 3300, "nom");
+            painter.drawText(1350, 3300, "EMAIL");
+
+
+    painter.drawRect(100,3000,9400,10700);
+
+    QTextDocument previewDoc;
+   QString pdflist = QDate::currentDate().toString("'data_'MM_dd_yyyy'.txt'");
+
+    QTextCursor cursor(&previewDoc);
+
+    QSqlQuery query;
+    query.prepare("SELECT reference_produit, prix, date_produit, quantite, nom");
+    query.exec();
+    while (query.next())
+    {
+        painter.drawText(300,i,query.value(0).toString());
+        painter.drawText(1500,i,query.value(1).toString());
+        painter.drawText(3000,i,query.value(2).toString());
+        painter.drawText(4800,i,query.value(3).toString());
+        painter.drawText(6600,i,query.value(4).toString());
+        painter.drawText(8400,i,query.value(5).toString());
+        //painter.drawText(10000,i,query.value(6).toString());
+        //painter.drawText(11500,i,query.value(7).toString());
+        //painter.drawText(13500,i,query.value(8).toString());
+
+        i = i +500;
+    }
+
+    int reponse = QMessageBox::question(this, "Générer PDF", " PDF Enregistré ! Voulez Vous Affichez Le PDF ?",
+        QMessageBox::Yes|QMessageBox::No);
+    if (reponse == QMessageBox::Yes)
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(dir+"/PRODUITS.pdf"));
+        painter.end();
+    }
+    else
+    {
+         painter.end();
     }
 }
 
 
-
-void MainWindow::on_rechercher_commande1_textChanged(const QString &arg1)
+void MainWindow::on_le_tri_clicked()
 {
-    if(arg1!="")
-           ui->TAB_CMD->setModel(c.rechercher_commande(arg1));
-           else
-               ui->TAB_CMD->setModel(c.rechercher_commande(arg1));
-}
+   produits p;
+    QSqlQueryModel * result =p.tri_reference_produit();
+    ui->tab_produits->setModel(result);
 
-
-void MainWindow::on_tri_id_a_clicked()
-{
-   Commande c;
-     QSqlQueryModel * result =c.tri_ID();
-     ui->TAB_CMD->setModel(result);
 
 }
 
-void MainWindow::on_tri_date_a_clicked()
+void MainWindow::on_le_tri_2_clicked()
 {
-    Commande c;
-      QSqlQueryModel * result =c.tri_DATE_PRODUIT();
-      ui->TAB_CMD->setModel(result);
+    produits p;
+    QSqlQueryModel * result =p.tri_prix();
+    ui->tab_produits->setModel(result);
+
 }
-void MainWindow::on_stat_clicked()
+
+
+
+
+
+
+
+
+void MainWindow::on_stat_butt_clicked()
 {
-    QSqlQueryModel *model = c.afficher();
-    int totalCommandes = model->rowCount();
+    QSqlQueryModel *model = p.afficher();
+    int totalproduits = model->rowCount();
 
     // Initialiser les compteurs
     int quantiteMoins100 = 0;
     int quantitePlus100 = 0;
 
-    // Calculer le nombre de commandes avec une quantité < 100 ou > 100
-    for (int row = 0; row < totalCommandes; ++row) {
-        int quantiteCommande = model->data(model->index(row, model->record().indexOf("QUANTITECOMMANDE"))).toInt();
+    // Calculer le nombre de produits avec une quantité < 100 ou > 100
+    for (int row = 0; row < totalproduits; ++row) {
+        int quantite = model->data(model->index(row, 3)).toInt(); // Assuming column index 3 is for "QUANTITE"
 
-        if (quantiteCommande < 100) {
+        if (quantite < 100) {
             quantiteMoins100++;
-        } else if (quantiteCommande > 100) {
+        } else if (quantite > 100) {
             quantitePlus100++;
         }
     }
 
-    // Calcul du pourcentage des commandes avec une quantité < 100 ou > 100
-    double pourcentageMoins100 = (totalCommandes > 0) ? ((double)quantiteMoins100 / totalCommandes) * 100 : 0;
-    double pourcentagePlus100 = (totalCommandes > 0) ? ((double)quantitePlus100 / totalCommandes) * 100 : 0;
+    // Calcul du pourcentage des produits avec une quantité < 100 ou > 100
+    double pourcentageMoins100 = (totalproduits > 0) ? ((double)quantiteMoins100 / totalproduits) * 100 : 0;
+    double pourcentagePlus100 = (totalproduits > 0) ? ((double)quantitePlus100 / totalproduits) * 100 : 0;
 
     // Créer un objet QPieSeries pour stocker les données du graphique
     QPieSeries *series = new QPieSeries();
-    QPieSlice *sliceQuantiteMoins100 = new QPieSlice("Quantité < 100", pourcentageMoins100);
-    QPieSlice *sliceQuantitePlus100 = new QPieSlice("Quantité > 100", pourcentagePlus100);
+    QPieSlice *slicequantiteMoins100 = new QPieSlice("Quantité < 100", pourcentageMoins100);
+    QPieSlice *slicequantitePlus100 = new QPieSlice("Quantité > 100", pourcentagePlus100);
 
     // Attribuer des couleurs spécifiques aux tranches
-    sliceQuantiteMoins100->setColor(QColor("#FF69B4"));  // Rose
-    sliceQuantitePlus100->setColor(QColor("#0000FF"));   // Bleu
+    // ...
+
+    // Attribuer des couleurs spécifiques aux tranches
+    slicequantiteMoins100->setColor(QColor("#800000"));  // Rouge
+    slicequantitePlus100->setColor(QColor("#FF0000"));   // Gris
+
+
+
+
 
     // Ajouter les pourcentages aux labels des parts
-    sliceQuantiteMoins100->setLabel(QString("Quantité < 100 : %1%").arg(pourcentageMoins100, 0, 'f', 2));
-    sliceQuantitePlus100->setLabel(QString("Quantité > 100 : %1%").arg(pourcentagePlus100, 0, 'f', 2));
-
-    series->append(sliceQuantiteMoins100);
-    series->append(sliceQuantitePlus100);
+    slicequantiteMoins100->setLabel(QString("Quantité < 100 : %1%").arg(pourcentageMoins100, 0, 'f', 2));
+    slicequantitePlus100->setLabel(QString("Quantité > 100 : %1%").arg(pourcentagePlus100, 0, 'f', 2));
+    series->append(slicequantiteMoins100);
+    series->append(slicequantitePlus100);
 
     // Créer un objet QChart pour le graphique
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Statistique Quantité < 100, Quantité > 100");
+    chart->setTitle("Statistique Quantité Moins 100, Quantité Plus 100");
 
     // Ajouter une légende personnalisée
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
 
+    // Ajouter une animation au graphique
+    chart->setAnimationOptions(QChart::AllAnimations);
+
     // Créer un objet QChartView pour afficher le graphique
     QChartView *chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);  // Activer l'antialiasing pour des graphiques plus fluides
+
+    // Appliquer les styles CSS directement à QChartView
+    chartView->setStyleSheet("QChartView { background-color: #f5f5f5; } QPieSeries { color: white; }");
 
     // Créer un nouveau QDialog pour afficher le graphique
     QDialog *chartDialog = new QDialog(this);
@@ -328,90 +521,4 @@ void MainWindow::on_stat_clicked()
 
     // Afficher la fenêtre
     chartDialog->exec();
-
-}
-
-void MainWindow::on_PDF_bb_clicked()
-{
-    QPdfWriter pdf("C:/Users/hammemi/Downloads/CMDD/Commande.pdf");
-
-    QPainter painter(&pdf);
-    int i = 4000;
-    painter.setPen(Qt::darkCyan);
-    painter.setFont(QFont("Times New Roman", 25));
-    painter.drawText(3000, 1400, "PRODUITS");
-    painter.setPen(Qt::black);
-    painter.setFont(QFont("Times New Roman", 15));
-    painter.drawRect(100, 100, 9400, 2500);
-    painter.drawRect(100, 3000, 9400, 500);
-    painter.setFont(QFont("Times New Roman", 9));
-    painter.drawText(4400, 3300, "ID");
-    painter.drawText(400, 3300, "STATUS_PRODUIT");
-    painter.drawText(1750, 3300, "DATE_PRODUIT");
-    painter.drawText(2000, 3300, "QUANTITECOMMANDE");
-
-    painter.drawRect(100, 3000, 9400, 9000);
-
-    QSqlQuery query;
-    query.prepare("SELECT * FROM COMMANDE");
-    query.exec();
-    while (query.next())
-    {
-        painter.drawText(1350, i, query.value(1).toString());
-        painter.drawText(2300, i, query.value(2).toString());
-        painter.drawText(3400, i, query.value(3).toString());
-        i = i + 350;
-    }
-    QMessageBox::information(this, QObject::tr("PDF Saved Successfully!"),
-                             QObject::tr("PDF Saved Successfully!.\n" "Click Cancel to exit."), QMessageBox::Cancel);
-}
-
-void MainWindow::on_enrg_bb_clicked()
-{
-    QString dir = "C:/Users/hammemi/Downloads/CMDD";
-    QDir().mkpath(dir);
-    QString fileName = dir + "/COMMANDE.pdf";
-    QPdfWriter pdf(fileName);
-    QPainter painter(&pdf);
-    int i = 4000;
-    painter.drawPixmap(QRect(100, 100, 2000, 2000), QPixmap("C:/Users/msi/Downloads/logo_p.png"));
-    painter.setPen(Qt::red);
-    painter.setFont(QFont("Times New Roman", 25));
-    painter.drawText(3000, 1450, "Liste des Pharmacies");
-    painter.setPen(Qt::black);
-    painter.setFont(QFont("Times New Roman", 15));
-    painter.drawRect(100, 100, 9400, 2500);
-    painter.drawRect(100, 3000, 9400, 500);
-    painter.setFont(QFont("Times New Roman", 10));
-
-    painter.drawText(4400, 3300, "ID");
-    painter.drawText(400, 3300, "STATUS_PRODUIT");
-    painter.drawText(1750, 3300, "DATE_PRODUIT");
-    painter.drawText(2000, 3300, "QUANTITECOMMANDE");
-
-    painter.drawRect(100, 3000, 9400, 10700);
-
-    QSqlQuery query;
-    query.prepare("SELECT ID,STATUS_PRODUIT,DATE_PRODUIT, QUANTITECOMMANDE FROM COMMANDE");
-    query.exec();
-    while (query.next())
-    {
-        painter.drawText(300, i, query.value(0).toString());
-        painter.drawText(1500, i, query.value(1).toString());
-        painter.drawText(3000, i, query.value(2).toString());
-        painter.drawText(4800, i, query.value(3).toString());
-        i = i + 500;
-    }
-
-    int reponse = QMessageBox::question(this, "Générer PDF", " PDF Enregistré ! Voulez Vous Affichez Le PDF ?",
-                                        QMessageBox::Yes | QMessageBox::No);
-    if (reponse == QMessageBox::Yes)
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(dir + "/COMMANDE.pdf"));
-        painter.end();
-    }
-    else
-    {
-        painter.end();
-    }
 }

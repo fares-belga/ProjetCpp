@@ -1,7 +1,7 @@
 #ifndef HISTORIQUE_H
 #define HISTORIQUE_H
 
-#include <QString.h>
+#include <QString>
 #include <QSqlQuery>
 #include <QDate>
 #include <QSqlQueryModel>

@@ -1,64 +1,70 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "connexion.h"
-#include "commande.h"
 
 #include <QMainWindow>
-#include <QFileDialog>
-#include <QMessageBox>
+#include"produits.h"
+#include"notif.h"
+#include "smtp.h"
+#include "arduino.h"
 
-#include <QTextDocument>
-#include <QPrinter>
-#include <QApplication>
-#include <QTextBrowser>
-#include "historique.h"
-
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+namespace Ui {
+class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void SortCommands();
 
 
 private slots:
-    void on_BTNAJOUTER_clicked();
-
-    void on_BTNMODIFIER_clicked();
-
-    void on_BTNSUPPRIMER_clicked();
-
-    void on_rechercher_commande1_textChanged(const QString &arg1);
-
-    void on_tri_id_a_clicked();
-
-    void on_tri_date_a_clicked();
-
-    void on_stat_clicked();
+    void on_pb_Ajouter_clicked();
 
 
-    void on_PDF_bb_clicked();
 
-    void on_enrg_bb_clicked();
+   void on_pb_supprimer_3_clicked();
+
+
+
+   void on_modifier_clicked();
+
+   void on_pb_recherche_clicked();
+
+   void on_le_recherche_textChanged(const QString &arg1);
+
+   void on_le_pdf_clicked();
+
+   void on_BtnEnregistrer_clicked();
+
+
+
+
+
+   void on_le_tri_clicked();
+   void on_le_tri_2_clicked();
+
+
+
+
+
+
+
+
+   void on_stat_butt_clicked();
+
 
 private:
-
+   Arduino A;
    QByteArray data;
    QString test;
     Ui::MainWindow *ui;
 
-    Commande c ;
-
+    produits p ;
+notif n;
  QStringList files;
- historique h;
-
-
-
 };
+
 #endif // MAINWINDOW_H
