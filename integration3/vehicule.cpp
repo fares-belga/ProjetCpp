@@ -17,24 +17,18 @@ vehicule::vehicule(int id_veh,QString type_veh,QString date_entretien,QString ki
 bool vehicule::ajouter()
 {
     QSqlQuery query;
-    query.prepare("INSERT INTO VEHICULE(id_veh, type_veh, date_entretien, kilometrage, image) VALUES(:id_veh, :type_veh, :date_entretien, :kilometrage, :image)");
-    query.bindValue(":id_veh", id_veh);
-    query.bindValue(":type_veh", type_veh);
-    query.bindValue(":date_entretien", date_entretien);
-    query.bindValue(":kilometrage", kilometrage);
-    query.bindValue(":image", image);
 
-    bool inserted = query.exec();
+       //prepare() prend la requete en parametre pour la preparer a l'execution.
+       query.prepare("INSERT INTO VEHICULE(id_veh,type_veh,date_entretien,kilometrage,image)""VALUES(:id_veh,:type_veh,:date_entretien,:kilometrage,:image)");
+       //creation des variables liees
+       query.bindValue(":id_veh",id_veh);
+       query.bindValue(":type_veh",type_veh);
+       query.bindValue(":date_entretien",date_entretien);
+       query.bindValue(":kilometrage",kilometrage);
+       query.bindValue(":image",image);
+       return query.exec();//exec() envoie la requete pour l'executer
 
-    if (inserted) {
-        qDebug() << "Record inserted successfully!";
-    } else {
-        qDebug() << "Error:" << query.lastError().text();
-    }
-
-    return inserted;
 }
-
 //////////////////////////////////////////////////////////////////////////
 QSqlQueryModel * vehicule::afficher()
 {
@@ -50,14 +44,14 @@ QSqlQueryModel * vehicule::afficher()
    return model;
 }
 ////////////////////////////////////////////////////////////////////////////
-//bool vehicule::supprimerv(int id_veh)
-//{
-    //QSqlQuery query;
+bool vehicule::supprimer(int id_veh)
+{
+    QSqlQuery query;
 
-   // query.prepare("delete from vehicule where id_veh=:id_veh");
-   // query.bindValue(":id_veh",id_veh);
-   // return query.exec();
-//}
+    query.prepare("delete from vehicule where id_veh=:id_veh");
+    query.bindValue(":id_veh",id_veh);
+    return query.exec();
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

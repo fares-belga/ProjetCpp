@@ -86,13 +86,23 @@ using namespace std;
 #include <QComboBox>
 #include "sms.h"
 #include "ImageDelegate.h"
+QString destinationPath;
 using namespace std;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui ->le_reference_produit->setValidator(new QIntValidator(0,9999999,this));
+    ui->le_reference_produit->setValidator( new QIntValidator(0, 999999, this));
+    QRegExp rx("[a-zA-Z]+");
 
+
+    ui->tab_produits->setModel(p.afficher());
+    vehicule Etmp;
+
+        ui->tableView->setModel(Etmp.afficher());
+        ui->tableView->setItemDelegateForColumn(4, new ImageDelegate(this));
     ui->le_cin->setValidator(new QIntValidator(0, 9999999, this));
     ui->tab_client->setModel(C.afficher());
     admins a;
@@ -602,7 +612,7 @@ void MainWindow::on_pushButton_3_clicked()
 
 
 #include <QMessageBox>
-void setWidgetBackground(QWidget *widget, const QColor &color = Qt::magenta, bool visible = true) {
+void setWidgetBackground (QWidget *widget, const QColor &color = Qt::magenta, bool visible = true) {
     QPalette palette = widget->palette();
     palette.setColor(QPalette::Background, color);
     widget->setAutoFillBackground(true);
@@ -635,7 +645,7 @@ void MainWindow::on_BTNAJOUTER_clicked()
     Commande c(ID, STATUS_PRODUIT, DATE_PRODUIT, QUANTITECOMMANDE);  // Changer de ACTION à STATUS_PRODUIT
 
     // Ajouter les données à la base de données
-   // bool insertionSuccess = c.ajouter();
+   bool insertionSuccess = c.ajouter();
 
     // Mettre à jour le modèle de la table avec les données nouvellement ajoutées
     ui->TAB_CMD->setModel(c.afficher());
@@ -950,9 +960,18 @@ void MainWindow::on_enrg_bb_clicked()
 
 
 
+void MainWindow::on_le_reference_produit_cursorPositionChanged(int arg1, int arg2)
+{
+    // mainwindow.cpp (in the constructor or setup code)
+    connect(ui->le_reference_produit, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(on_le_reference_produit_cursorPositionChanged(int, int)));
+
+}
+
+
 
 void MainWindow::on_pb_Ajouter_clicked()
 {
+
     int reference = ui->le_reference_produit->text().toInt();
     float prix = ui->le_prix->text().toFloat();
     QString date_produit = ui->le_date_produit->text();
@@ -960,29 +979,47 @@ void MainWindow::on_pb_Ajouter_clicked()
     QString NOM = ui->le_nom->text();
     QString EMAIL = ui->le_email->text();
 
-    qDebug() << "Reference: " << reference;
-    qDebug() << "Prix: " << prix;
-    qDebug() << "Date produit: " << date_produit;
-    qDebug() << "Quantite: " << quantite;
-    qDebug() << "Nom: " << NOM;
-    qDebug() << "Email: " << EMAIL;
-
+    ui->tab_produits->setModel(p.afficher());
     produits p(reference, prix, date_produit, quantite, NOM, EMAIL);
     bool insertionSuccess = p.ajouter();
 
-    //if (insertionSuccess)
-   // {
-       // qDebug() << "Data added to the database successfully";
+    QMessageBox messagebox;
+    if (insertionSuccess)
+    {
+       // messagebox.setText("Data added to the database successfully");
         n.AjouterP();
+    }
+    else
+    {
+       // messagebox.setText("Failed to add data to the database");
+    }
+   // messagebox.exec();
 
-   // }
-    //else
-   // {
-       // qDebug() << "Failed to add data to the database";
-   // }
+    if (insertionSuccess)
+    {
+       // QMessageBox::information(nullptr, QObject::tr("Mise à jour"),
+                                // QObject::tr("Mise à jour réussie.\n"
+                                      //       "Cliquez sur Annuler pour quitter."),
+                               //  QMessageBox::Cancel);
+        n.ModifierP();
+    }
+    else
+    {
+       // QMessageBox::critical(nullptr, QObject::tr("Mise à jour"),
+                             //  QObject::tr("Échec de la mise à jour.\n"
+                                       //    "Cliquez sur Annuler pour quitter."),
+                               //QMessageBox::Cancel);
+    }
 
+    // Mettez à jour le modèle après la modification
     ui->tab_produits->setModel(p.afficher());
 }
+
+
+
+
+
+
 
 void MainWindow::on_pb_supprimer_3_clicked()
 {
@@ -1033,17 +1070,19 @@ void MainWindow::on_modifier_clicked()
     bool test = p.modifier(reference);
 
     ui->tab_produits->setModel(p.afficher());
-    if (test) {
-        QMessageBox::information(nullptr, QObject::tr("update"),
+     n.ModifierP();
+
+    //if (test) {
+        //QMessageBox::information(nullptr, QObject::tr("update"),
                                  QObject::tr(" successful.\n"
-                                            "Click Cancel to exit."), QMessageBox::Cancel);
-        n.ModifierP();
-    } else {
-        QMessageBox::critical(nullptr, QObject::tr("update"),
-                               QObject::tr(" failed.\n"
-                                           "Click Cancel to exit."), QMessageBox::Cancel);
-    }
-}
+                                         //   "Click Cancel to exit."), QMessageBox::Cancel);
+       // n.ModifierP();
+   // } else {
+       // QMessageBox::critical(nullptr, QObject::tr("update"),
+                               //QObject::tr(" failed.\n"
+                                       //    "Click Cancel to exit."), QMessageBox::Cancel);
+   // }
+);}
 
 void MainWindow::on_pb_recherche_clicked()
 {
@@ -1312,41 +1351,44 @@ void MainWindow::on_stat_butt_clicked()
 
 void MainWindow::on_pushButton_ajout_clicked()
 {
-    try {
-        // Récupération des informations saisies dans les 3 champs
-        int id_veh = ui->lineid->text().toInt();
-        QString type_veh = ui->linetype->currentText();
-        QString date_entretien = ui->linedate->text();
-        QString kilometrage = ui->linekilo->text();
+    //recuperation des informations saisies dans les 3 champs
+        int id_veh=ui->lineid->text().toInt();
+        QString type_veh=ui->linetype->currentText();
+
+        QString date_entretien=ui->linedate->text();
+        QString kilometrage=ui->linekilo->text();
         QString id_veh_str = QString::number(id_veh);
 
-        // Ajout du véhicule
-        bool test = v.ajouter();
+        vehicule v(id_veh,type_veh,date_entretien,kilometrage,destinationPath);
+        bool test=v.ajouter();
         sms s;
-
-        if (test) {
-            // Actualisation
+        if(test)
+        {
+            //refresh(actualiser)
             ui->tableView->setModel(Etmp.afficher());
             ui->tableView->setItemDelegateForColumn(4, new ImageDelegate(this));
-            s.sendSMS("+21650214128", "Ajout d'un nouveau véhicule avec succès   ID_VEH: " + id_veh_str + " | Type: " + type_veh + " | Date Entretien: " + date_entretien + " | Kilométrage: " + kilometrage);
-            QMessageBox::information(nullptr, QObject::tr("OK"), QObject::tr("Ajout effectué\nClick Cancel to exit."), QMessageBox::Cancel);
-        } else {
-            QMessageBox::critical(nullptr, QObject::tr("Not OK"), QObject::tr("Ajout non effectué.\nClick Cancel to exit."), QMessageBox::Cancel);
-        }
-    } catch (const std::exception &e) {
-        qDebug() << "Exception: " << e.what();
-    }
+            s.sendSMS("+21650214128", "ajout un nouvelle vehicule avec succès   ID: " + id_veh_str + " | Type: " + type_veh + " | Date Entretien: " + date_entretien +" | Kilometrage: " + kilometrage);
+        //    QMessageBox::information(nullptr,QObject::tr("OK"),QObject::tr("ajout effectué\n""Click Cancel to exit."),QMessageBox::Cancel);
+      //  }
+        //else
+         //   QMessageBox::critical(nullptr,QObject::tr("Not OK"),QObject::tr("Ajout non effectué.\n""Click Cancel to exit."),QMessageBox::Cancel);
 }
-
-
-bool vehicule::supprimerv(int id)
+}
+void MainWindow::on_pushButton_supprimer_clicked()
 {
-    QSqlQuery query;
-    query.prepare("DELETE FROM VEHICULES WHERE ID_VEH = :id");
-    query.bindValue(":id", id);
-
-    return query.exec();
+    int id_veh=ui->linesupp->text().toInt();
+    bool test=Etmp.supprimer(id_veh);
+    if (test)
+    {
+        //refresh
+        ui->tableView->setModel(Etmp.afficher());
+        ui->tableView->setItemDelegateForColumn(4, new ImageDelegate(this));
+        //QMessageBox::information(nullptr,QObject::tr("OK"),QObject::tr("suppression effectué\n""Click Cancel to exit."),QMessageBox::Cancel);
+    }
+    //else
+       // QMessageBox::critical(nullptr,QObject::tr("Not OK"),QObject::tr("suppression non effectué.\n""Click Cancel to exit."),QMessageBox::Cancel);
 }
+
 
 void MainWindow::on_pushButton_modifier_clicked()
 {
@@ -1360,8 +1402,8 @@ void MainWindow::on_pushButton_modifier_clicked()
                             QString date_entretien=ui->linedate->text();
                             QString kilometrage=ui->linekilo->text();
 
-                            //vehicule v(id_veh,type_veh,date_entretien,kilometrage,destinationPath);
-                           // QString id_veh_str = QString::number(id_veh);
+                            vehicule v(id_veh,type_veh,date_entretien,kilometrage,destinationPath);
+                           QString id_veh_str = QString::number(id_veh);
 
                       QSqlQuery quer;
                          quer.prepare("UPDATE VEHICULE SET ID_VEH= :id_veh ,TYPE_VEH= :type_veh, DATE_ENTRETIEN= :date_entretien , KILOMETRAGE=:kilometrage where  ID_VEH= :id_veh");
@@ -1452,7 +1494,7 @@ void MainWindow::on_pushButton_4_clicked() //statistique_button
     vehicule Etmp;
         QBarSet *set0 = new QBarSet("");
 
-       // *set0  << Etmp.statistiquesvehicule("Audi")<< Etmp.statistiquesvehicule("BMW")<< Etmp.statistiquesvehicule("Mercedes");
+        *set0  << Etmp.statistiquesvehicule("Audi")<< Etmp.statistiquesvehicule("BMW")<< Etmp.statistiquesvehicule("Mercedes");
 
 
         QColor color(0x6568F3);
@@ -1489,6 +1531,7 @@ void MainWindow::on_pushButton_4_clicked() //statistique_button
         chartView->setParent(ui->statE);
         chart->legend()->setAlignment(Qt::AlignBottom);
         chartView->show();
+
 
 }
 
@@ -1567,7 +1610,7 @@ void MainWindow::on_pboff_clicked()
            qDebug() << "Commande 'Off' envoyée avec succès à l'Arduino.";
        }
 }
-
+*/
 void MainWindow::on_pushButton_clicked()
 {
     if (Etmp.incrementNbVeh()) {
@@ -1585,7 +1628,7 @@ void MainWindow::on_pushButton_2_clicked()
         QMessageBox::warning(this, "Error", "Failed to decrement the number of vehicles. Current count might already be 0.");
     }
 }
-*/
+
 //void MainWindow::on_bu_clicked()
 //{
     //data= A.read_from_arduino();
@@ -1607,3 +1650,11 @@ void MainWindow::on_pushButton_2_clicked()
 
 
 
+
+
+void MainWindow::on_lineid_cursorPositionChanged(int arg1, int arg2)
+{
+    // mainwindow.cpp (in the constructor or setup code)
+    connect(ui->lineid, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(on_lineid_cursorPositionChanged(int, int)));
+
+}

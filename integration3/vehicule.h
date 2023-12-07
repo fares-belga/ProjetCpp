@@ -29,9 +29,9 @@ public:
    bool incrementNbVeh( );
 
     //les fonctions:
-    bool ajouter();
-    QSqlQueryModel * afficher();
-    bool supprimerv(int);
+   bool ajouter();
+   QSqlQueryModel * afficher();
+   bool supprimer(int);
 bool  decrementNbVeh( );
 };
 

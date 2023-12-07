@@ -111,7 +111,8 @@ private slots:
    void on_le_tri_clicked();
    void on_le_tri_2_clicked();
    void on_stat_butt_clicked();
-   //*****
+   //**************rana**********************************************
+
    void on_pushButton_ajout_clicked();
 
    void on_pushButton_supprimer_clicked();
@@ -125,9 +126,9 @@ private slots:
    void on_pushButton_4_clicked();
    void on_recherche_2_clicked();
    void on_image_clicked();
-   void on_bu_clicked();
-   void on_pbon_clicked();
-   void on_pboff_clicked();
+  // void on_bu_clicked();
+  // void on_pbon_clicked();
+  // void on_pboff_clicked();
    void on_pushButton_clicked();
    void on_pushButton_2_clicked();
 
@@ -141,7 +142,8 @@ private slots:
   // void on_pushButton_modifier_clickd();
 
 
-   void on_triId_8_clickd();
+
+
 
 private:
     Ui::MainWindow *ui;
@@ -160,6 +162,10 @@ notif n;
  vehicule v;
  //Arduino A;
 // QByteArray data;
+ // mainwindow.h
+
+
+
 };
 
 #endif // MAINWINDOW_H

@@ -104,7 +104,7 @@ bool produits::ajouter()
         delete smtp;
 
         // Affichage d'un message de succès
-        QMessageBox::information(nullptr, "Succès", "Données ajoutées avec succès.");
+    // QMessageBox::information(nullptr, "Succès", "Données ajoutées avec succès.");
 
         // Placez ici le code que vous souhaitez exécuter après l'ajout réussi
 

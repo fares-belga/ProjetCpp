@@ -59,7 +59,7 @@ QTabWidget::tab-bar {
 </string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -2366,7 +2366,7 @@ QLabel {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -2396,7 +2396,7 @@ QPushButton:hover {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -2427,7 +2427,7 @@ QPushButton:hover {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -2457,7 +2457,7 @@ QPushButton:hover {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -2725,7 +2725,7 @@ QLabel {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
@@ -3017,19 +3017,19 @@ QLineEdit:hover {
     </widget>
     <widget class="QWidget" name="tab_8">
      <attribute name="title">
-      <string>Page</string>
+      <string>vehicule</string>
      </attribute>
      <widget class="QTabWidget" name="tabWidget_4">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>10</y>
         <width>1091</width>
         <height>871</height>
        </rect>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_9">
        <attribute name="title">
@@ -3193,7 +3193,7 @@ QGroupBox::title {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QLabel {
@@ -3228,7 +3228,7 @@ QLabel#bordureRouge {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QLabel {
@@ -3263,7 +3263,7 @@ QLabel#bordureRouge {
           </rect>
          </property>
          <property name="autoFillBackground">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">QLabel {
@@ -3847,8 +3847,8 @@ QPushButton:hover {
         <widget class="QLabel" name="label_26">
          <property name="geometry">
           <rect>
-           <x>120</x>
-           <y>460</y>
+           <x>560</x>
+           <y>470</y>
            <width>281</width>
            <height>161</height>
           </rect>
