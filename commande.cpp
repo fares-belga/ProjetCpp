@@ -57,14 +57,22 @@ void Commande::SetQUANTITECOMMANDE(int QUANTITECO) {
 
 bool Commande::ajouter()
 {
+    // Assurez-vous que la connexion à la base de données est établie
+    if (!setupDatabaseConnection()) {
+        qDebug() << "Error: Failed to set up the database connection.";
+        return false;
+    }
+
     QSqlQuery query;
     QString ID_string = QString::number(ID);
-    QString QUANTITECOMMANDE_string=QString::number(QUANTITECOMMANDE);
+    QString QUANTITECOMMANDE_string = QString::number(QUANTITECOMMANDE);
 
+    qDebug() << "Before preparing query";
     query.prepare("INSERT INTO COMMANDE (ID, STATUS_PRODUIT, DATE_PRODUIT,QUANTITECOMMANDE) "
-                  "VALUES (:ID,  :STATUS_PRODUIT, :DATE_PRODUIT,:QUANTITECOMMANDE)");
-    query.bindValue(":ID", ID_string);
+                  "VALUES (:ID,  :STATUS_PRODUIT, :DATE_PRODUIT, :QUANTITECOMMANDE)");
+    qDebug() << "After preparing query";
 
+    query.bindValue(":ID", ID_string);
     query.bindValue(":STATUS_PRODUIT", STATUS_PRODUIT);
     query.bindValue(":DATE_PRODUIT", DATE_PRODUIT);
     query.bindValue(":QUANTITECOMMANDE", QUANTITECOMMANDE_string);
@@ -72,9 +80,9 @@ bool Commande::ajouter()
     bool inserted = query.exec();
 
     if (inserted) {
-       // qDebug() << "Record inserted successfully!";
+        qDebug() << "Record inserted successfully!";
     } else {
-      //  qDebug() << "Error:" << query.lastError().text();
+       qDebug() << "Error:" << query.lastError().text();
     }
 
     return inserted;

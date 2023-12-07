@@ -1,11 +1,13 @@
 #include "connection.h"
-
+#include"produits.h"
+#include"notif.h"
+#include <QSqlDatabase>
 Connection::Connection()
 {
 
 }
 
-bool Connection::createconnect()
+bool Connection::createconnection()
 {bool test=false;
 QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
 db.setDatabaseName("ProjetCpp");
@@ -14,7 +16,8 @@ db.setPassword("123456");//inserer mot de passe de cet utilisateur
 
 if (db.open())
 test=true;
-
-return  test;
+   return test;
 }
+void Connection::closeconnection()
+ { db.close();}
 
