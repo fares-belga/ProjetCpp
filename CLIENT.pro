@@ -38,10 +38,7 @@ SOURCES += \
     historique.cpp \
     login.cpp \
     main.cpp \
-    mainwindow.cpp \
-    notif.cpp \
-    produits.cpp \
-    smtp.cpp
+    mainwindow.cpp
 
 HEADERS += \
    ../../projet c++/build-CLIENT-Desktop_Qt_5_9_9_MinGW_32bit-Debug/ui_mainwindow.h \
@@ -51,10 +48,7 @@ HEADERS += \
     connection.h \
     historique.h \
     login.h \
-    mainwindow.h \
-    notif.h \
-    produits.h \
-    smtp.h
+    mainwindow.h
 
 FORMS += \
     login.ui \
