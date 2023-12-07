@@ -26,8 +26,8 @@ class produits
         void Setreference_produit(int);
        float Getprix();
         void Setprix(float) ;
-        QString Getdate_produits();
-        void Setdate_produits(QString);
+        QString Getdate_produit();
+        void Setdate_produit(QString);
         int Getquantite();
         void Setquantite(int);
         QString GetNOM();
@@ -51,8 +51,7 @@ class produits
     private:
         int REFERENCE_PRODUIT;
         float PRIX;
-        QString DATE_PRODUITS;
-
+        QString DATE_PRODUIT;
         int QUANTITE;
         QString NOM;
         QString EMAIL;

@@ -41,10 +41,13 @@ SOURCES += \
     mainwindow.cpp \
     notif.cpp \
     produits.cpp \
-    smtp.cpp
+    sms.cpp \
+    smtp.cpp \
+    vehicule.cpp
 
 HEADERS += \
    ../../projet c++/build-CLIENT-Desktop_Qt_5_9_9_MinGW_32bit-Debug/ui_mainwindow.h \
+    ImageDelegate.h \
     admins.h \
     client.h \
     commande.h \
@@ -54,7 +57,9 @@ HEADERS += \
     mainwindow.h \
     notif.h \
     produits.h \
-    smtp.h
+    sms.h \
+    smtp.h \
+    vehicule.h
 
 FORMS += \
     login.ui \

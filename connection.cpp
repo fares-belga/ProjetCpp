@@ -7,7 +7,7 @@ Connection::Connection()
 
 }
 
-bool Connection::createconnection()
+bool Connection::createconnect()
 {bool test=false;
 QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
 db.setDatabaseName("ProjetCpp");
@@ -16,8 +16,7 @@ db.setPassword("123456");//inserer mot de passe de cet utilisateur
 
 if (db.open())
 test=true;
-   return test;
+
+return  test;
 }
-void Connection::closeconnection()
- { db.close();}
 

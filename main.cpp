@@ -1,31 +1,44 @@
 #include "mainwindow.h"
+#include "login.h"
+#include "connection.h"
 #include <QApplication>
 #include <QMessageBox>
-#include "connection.h"
-#include  <QDebug>
+#include "client.h"
+#include <QDebug>
+#include <QSystemTrayIcon>  // Ajout de l'inclusion nécessaire
+#include <QIcon>           // Ajout de l'inclusion nécessaire
+#include<iostream>
+using namespace std;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    // ...
+
+    // Création de l'icône du plateau système
+    QSystemTrayIcon* trayIcon = new QSystemTrayIcon();
+
+    // Chargement de l'icône depuis un fichier (remplacez le chemin par le vôtre)
+    QIcon icon(":/path/to/your/icon.png");
+
+    // Configuration de l'icône pour le QSystemTrayIcon
+    trayIcon->setIcon(icon);
+
     Connection c;
-    bool test=c.createconnection();
+    Client C;
+    qDebug();
+    bool test = c.createconnect();
     MainWindow w;
-    if(test)
-    {w.show();
-        QMessageBox::information(nullptr, QObject::tr("database is open"),
-                    QObject::tr("connection successful.\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
+    Login l;
 
-}
-    else
-        QMessageBox::critical(nullptr, QObject::tr("database is not open"),
-                    QObject::tr("connection failed.\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
+    if (test) {
+        // Affichage de la fenêtre de connexion
+        l.show();
+    }
 
-
+    // Affichage de l'icône du plateau système
+    trayIcon->show();
 
     return a.exec();
 }
-
-

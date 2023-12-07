@@ -3,20 +3,16 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QDate>
-
-#include"produits.h"
-#include"notif.h"
-
-
+#include <QDebug>
+using namespace std;
 
 class Connection
 {
     QSqlDatabase db;
+
 public:
     Connection();
-    bool createconnection();
-    void closeconnection();
+    bool createconnect();
 
 };
 
